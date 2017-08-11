@@ -10,10 +10,11 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSpinBox, \
         QPushButton, QProgressBar, QGridLayout, QFileDialog
 from PyQt5.QtGui import QFont, QFontDatabase
 
-from ffprobe3 import FFProbe
+import midentify
 
 from wand.image import Image
 from wand.color import Color
+
 
 class tmp(QApplication):
     def __init__(self, args):
@@ -89,7 +90,7 @@ class tmp(QApplication):
                     filter='Video Files (*.avi *.flv *.mkv *.mp4 *.mpg *.wmv)')[0]
 
         # Use ffprobe to get video length
-        self.videoLength = int(FFProbe(self.inputPath).streams[0].duration_seconds())
+        self.videoLength = int(midentify.midentify(self.inputPath).length)
 
         # Move spinbox ranges
         self.intervalSpin.setRange(1, self.videoLength)
@@ -120,7 +121,7 @@ class tmp(QApplication):
             os.makedirs('tmp')
 
         command = [ 
-                './mplayer',
+                'mplayer',
                 '-vo', 'jpeg:outdir=tmp',
                 '-sstep', str(self.intervalSpin.value()),
                 '-endpos', str(self.videoLength),

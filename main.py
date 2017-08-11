@@ -90,7 +90,7 @@ class tmp(QApplication):
                     filter='Video Files (*.avi *.flv *.mkv *.mp4 *.mpg *.wmv)')[0]
 
         # Use ffprobe to get video length
-        self.videoLength = int(midentify.midentify(self.inputPath).length)
+        self.videoLength = int(midentify.midentify(self.inputPath).length) - 3
 
         # Move spinbox ranges
         self.intervalSpin.setRange(1, self.videoLength)

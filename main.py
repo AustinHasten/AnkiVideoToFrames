@@ -86,7 +86,7 @@ class tmp(QApplication):
         self.inputPath = \
             QFileDialog.getOpenFileName(
                     caption='Select Video File',
-                    filter='Video Files (*.avi *.flv *.mp4 *.mpg *.wmv)')[0]
+                    filter='Video Files (*.avi *.flv *.mkv *.mp4 *.mpg *.wmv)')[0]
 
         # Use ffprobe to get video length
         self.videoLength = int(FFProbe(self.inputPath).streams[0].duration_seconds())

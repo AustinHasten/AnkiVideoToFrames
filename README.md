@@ -8,6 +8,8 @@ You'll need to install the following through pip:
     wand
     ffprobe3
     pyqt5
+    
+&nbsp;
 
 Frames are outputted to the Anki collection.media folder that you select on startup.
 The file names are formatted in this way:

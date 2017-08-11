@@ -9,6 +9,7 @@ You'll need to install the following through pip:
     ffprobe3
     pyqt5
     
+You will probably also need to install mplayer and imagemagick through your distros package manager.
 &nbsp;
 
 Frames are outputted to the Anki collection.media folder that you select on startup.

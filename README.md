@@ -6,7 +6,6 @@ Numbers are only approximate due to mplayer inconsistencies.
 You'll need to install the following through pip:
 
     wand
-    ffprobe3
     pyqt5
     
 You will probably also need to install mplayer and imagemagick through your distro's package manager.

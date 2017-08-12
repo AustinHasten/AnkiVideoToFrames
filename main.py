@@ -6,17 +6,14 @@ import sys
 import shutil
 import subprocess as sp
 
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSpinBox, \
-        QPushButton, QProgressBar, QGridLayout, QFileDialog
-from PyQt5.QtGui import QFont, QFontDatabase
-
 import midentify
-
 from wand.image import Image
 from wand.color import Color
+from PyQt5.QtGui import QFont, QFontDatabase
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSpinBox, \
+        QPushButton, QProgressBar, QGridLayout, QFileDialog
 
-
-class tmp(QApplication):
+class App(QApplication):
     def __init__(self, args):
         super().__init__(args)
 
@@ -32,7 +29,7 @@ class tmp(QApplication):
         self.window.setLayout(self.layout)
 
         # Create widgets
-        self.intervalLabel = QLabel("Seconds between frames: ")
+        self.intervalLbl = QLabel("Seconds between frames: ")
         self.intervalSpin = QSpinBox()
         self.totalFramesLbl = QLabel("Total number of frames: ")
         self.totalFramesSpin = QSpinBox()
@@ -57,7 +54,7 @@ class tmp(QApplication):
         self.setToggleWidgets(False)
 
         # Add widgets to layout
-        self.layout.addWidget(self.intervalLabel, 0, 0)
+        self.layout.addWidget(self.intervalLbl, 0, 0)
         self.layout.addWidget(self.intervalSpin, 0, 1)
         self.layout.addWidget(self.totalFramesLbl, 1, 0)
         self.layout.addWidget(self.totalFramesSpin, 1, 1)
@@ -89,7 +86,7 @@ class tmp(QApplication):
                     caption='Select Video File',
                     filter='Video Files (*.avi *.flv *.mkv *.mp4 *.mpg *.wmv)')[0]
 
-        # Use ffprobe to get video length
+        # Use midentify to get video length, subtract to prevent stalling
         self.videoLength = int(midentify.midentify(self.inputPath).length) - 3
 
         # Move spinbox ranges
@@ -102,8 +99,8 @@ class tmp(QApplication):
     # Link values of deley and total shots
     def intervalSpinChanged(self):
         # Calculate total shots by dividing video length by shot interval
-        total_shots = (self.videoLength / self.intervalSpin.value())
-        self.totalFramesSpin.setValue(total_shots)
+        totalShots = (self.videoLength / self.intervalSpin.value())
+        self.totalFramesSpin.setValue(totalShots)
 
     # Link values of deley and total shots
     def totalFramesSpinChanged(self):
@@ -157,5 +154,5 @@ class tmp(QApplication):
         self.setToggleWidgets(True)
 
 if __name__ == '__main__':
-    app = tmp(sys.argv)
+    app = App(sys.argv)
     sys.exit(app.exec_())

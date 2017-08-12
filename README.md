@@ -3,12 +3,15 @@ Takes a video then outputs frames and text file to be imported into Anki.
 It can either create a certain amount of frames or make a frame every X seconds.
 Numbers are only approximate due to mplayer inconsistencies.
 
-You'll need to install the following through pip:
+Make sure you have these python packages (available through pip):
 
     wand
     pyqt5
     
-You will probably also need to install mplayer and imagemagick through your distro's package manager.
+And these programs (available through your distro's package manger, presumably):
+
+    mplayer
+    imagemagick
 
 &nbsp;
 

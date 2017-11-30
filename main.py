@@ -7,8 +7,7 @@ import shutil
 import subprocess as sp
 
 import midentify
-from wand.image import Image
-from wand.color import Color
+from PIL import Image
 from PyQt5.QtGui import QFont, QFontDatabase
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSpinBox, \
         QPushButton, QProgressBar, QGridLayout, QFileDialog
@@ -16,9 +15,6 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSpinBox, \
 class App(QApplication):
     def __init__(self, args):
         super().__init__(args)
-
-        # Black image used to compare frames with to make sure they aren't blank
-        self.blackImage = Image(width=1, height=1, background=Color('black'))
 
         self.buildGui()
 
@@ -141,13 +137,12 @@ class App(QApplication):
                 newPath = f'{self.mediaFolder}/{fileName}_{frame}'
                 shutil.move(f'./tmp/{frame}', newPath)
 
-                # Find blank images and delete them, write non-blank file info
-                with Image(filename=newPath) as img:
-                    mean = img.compare(self.blackImage, 'mean_absolute')[1]
-                    if mean == 0.0:
-                        os.remove(newPath)
-                    else:
-                        csv.write(f'{fileName};{frame}\n')
+                # Delete blank images, write non-blank ones
+                bands = Image.open(newPath).split()
+                if all(band.getextrema() == (0, 0) for band in bands):
+                    os.remove(newPath)
+                else:
+                    csv.write(f'{fileName};{frame}\n')
 
         # Reenable widgets and stop indeterminate progressbar
         self.progressBar.setRange(0, 1)

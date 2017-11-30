@@ -5,13 +5,12 @@ Numbers are only approximate due to mplayer inconsistencies.
 
 Make sure you have these python packages (available through pip):
 
-    wand
+    pillow
     pyqt5
     
 And these programs (available through your distro's package manger, presumably):
 
     mplayer
-    imagemagick
 
 &nbsp;
 

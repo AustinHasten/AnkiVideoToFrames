@@ -30,16 +30,4 @@ The outputted text file is a csv where each line looks like this:
     
 &nbsp;
 
-So you cards should look like this:
-
-Front:
-
-    {{Image}}
-
-Back:
-
-    {{FrontSide}}
-    
-    <hr id="answer">
-    
-    {{Title}}
+Import the created csv using the basic note type, making sure to check "Allow HTML in fields".

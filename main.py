@@ -134,7 +134,7 @@ class App(QApplication):
                 if all(band.getextrema() == (0, 0) for band in bands):
                     os.remove(newPath)
                 else:
-                    csv.write(f'<img src=\"{fileName}_{frame}.jpg\">;{fileName}')
+                    csv.write(f'<img src=\"{fileName}_{frame}\">;{fileName}\n')
 
         # Reenable widgets and stop indeterminate progressbar
         self.progressBar.setRange(0, 1)

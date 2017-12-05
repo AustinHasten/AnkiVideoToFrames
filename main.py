@@ -5,7 +5,6 @@ import os, sys, shutil
 import subprocess as sp
 from PIL import Image
 from moviepy.editor import VideoFileClip
-from PyQt5.QtGui import QFont, QFontDatabase
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSpinBox, \
         QPushButton, QProgressBar, QGridLayout, QFileDialog
 
@@ -50,10 +49,6 @@ class App(QApplication):
         self.layout.addWidget(self.fileSelectBtn, 2, 0)
         self.layout.addWidget(self.commenceBtn, 2, 1)
         self.layout.addWidget(self.progressBar, 3, 0, 1, 2)
-
-        # Set font for the whole application
-        QFontDatabase.addApplicationFont('terminus.ttf')
-        self.setFont(QFont('Terminus (TTF)', 14))
 
         # Open media folder and input file select dialogs
         self.mediaFolder = \

@@ -100,6 +100,9 @@ class App(QApplication):
         # Create directory to hold frames before they're renamed
         if not os.path.exists('tmp'):
             os.makedirs('tmp')
+        # Create directory to CSVs
+        if not os.path.exists('csv'):
+            os.makedirs('csv')
 
         command = [ 
                 'mplayer',

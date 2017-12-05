@@ -1,12 +1,8 @@
 # Saul Femm
 # Initial Commit - August 11th, 2017
 
-import os
-import sys
-import shutil
+import os, sys, shutil, midentify
 import subprocess as sp
-
-import midentify
 from PIL import Image
 from PyQt5.QtGui import QFont, QFontDatabase
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSpinBox, \
@@ -40,11 +36,7 @@ class App(QApplication):
         self.commenceBtn.pressed.connect(self.commenceBtnPushed)
 
         # Add toggle widgets to list
-        self.toggleWidgets = []
-        self.toggleWidgets.append(self.intervalSpin)
-        self.toggleWidgets.append(self.totalFramesSpin)
-        self.toggleWidgets.append(self.fileSelectBtn)
-        self.toggleWidgets.append(self.commenceBtn)
+        self.toggleWidgets = [self.intervalSpin, self.totalFramesSpin, self.fileSelectBtn, self.commenceBtn]
 
         # Disable widgets
         self.setToggleWidgets(False)

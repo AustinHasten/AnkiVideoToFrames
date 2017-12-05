@@ -7,6 +7,7 @@ Make sure you have these python packages (available through pip):
 
     pillow
     pyqt5
+    moviepy
     
 And these programs (available through your distro's package manger, presumably):
 

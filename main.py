@@ -1,9 +1,10 @@
 # Saul Femm
 # Initial Commit - August 11th, 2017
 
-import os, sys, shutil, midentify
+import os, sys, shutil
 import subprocess as sp
 from PIL import Image
+from moviepy.editor import VideoFileClip
 from PyQt5.QtGui import QFont, QFontDatabase
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSpinBox, \
         QPushButton, QProgressBar, QGridLayout, QFileDialog
@@ -75,7 +76,7 @@ class App(QApplication):
                     filter='Video Files (*.avi *.flv *.mkv *.mp4 *.mpg *.wmv)')[0]
 
         # Use midentify to get video length, subtract to prevent stalling
-        self.videoLength = int(midentify.midentify(self.inputPath).length) - 3
+        self.videoLength = VideoFileClip(self.inputPath).duration - 3
 
         # Move spinbox ranges
         self.intervalSpin.setRange(1, self.videoLength)

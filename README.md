@@ -14,20 +14,14 @@ And these programs (available through your distro's package manger, presumably):
 
 &nbsp;
 
-Frames are outputted to the Anki collection.media folder that you select on startup.
-The file names are formatted in this way:
+Usage:
 
-    Movie Title_Frame Number.jpg
-    
-    EX.
-    Bride of Frankenstein_00000093.jpg
-    
-&nbsp;
+1. Start main.py
 
-The outputted text file is a csv where each line looks like this:
+2. Select your collection.media folder
 
-    <img src="FileName_FrameNumber.jpg">;FileName
-    
-&nbsp;
+3. Select the video file
 
-Import the created csv using the basic note type, making sure to check "Allow HTML in fields".
+4. Adjust the settings, press "Commence"
+
+5. Import the created csv using the basic note type, making sure to check "Allow HTML in fields"

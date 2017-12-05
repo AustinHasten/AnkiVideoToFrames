@@ -26,7 +26,7 @@ The file names are formatted in this way:
 
 The outputted text file is a csv where each line looks like this:
 
-    Input File Name;Frame Number.jpg
+    <img src="FileName_FrameNumber.jpg">;FileName
     
 &nbsp;
 
@@ -34,7 +34,7 @@ So you cards should look like this:
 
 Front:
 
-    <img src="{{Title}}_{{Frame Number}}">
+    {{Image}}
 
 Back:
 

@@ -8,6 +8,9 @@ from aqt.qt import *
 from aqt.utils import showInfo
 from anki import utils, sound
 
+sys.path.insert(0, os.path.dirname(__file__))
+from mutagen.mp4 import MP4
+
 class App(QApplication):
     def __init__(self, args):
         super().__init__(args)
@@ -66,10 +69,11 @@ class App(QApplication):
 
         # Use mplayer to get video length, subtract to prevent stalling
 
-        command = ['mplayer', '-vo', 'null', '-ao', 'null', '-frames', '0', '-identify', self.inputPath]
-        results = sp.check_output(command).decode('utf-8')
+#        command = ['mplayer', '-vo', 'null', '-ao', 'null', '-frames', '0', '-identify', self.inputPath]
+#        results = sp.check_output(command).decode('utf-8')
 
-        self.videoLength = int(re.search(r'ID_LENGTH=(\d*)', results).groups()[0]) - 3
+        self.videoLength = MP4(self.inputPath).info.length
+#        self.videoLength = int(re.search(r'ID_LENGTH=(\d*)', results).groups()[0]) - 3
 
         # Move spinbox ranges
         self.intervalSpin.setRange(1, self.videoLength)
@@ -101,10 +105,10 @@ class App(QApplication):
         os.makedirs(tmpDir)
 
         command = [ 
-                'mplayer',
-                '-vo', f'jpeg:outdir={tmpDir}',
+                'mpv',
+                '--vo=image',
+                f'--vo-image-outdir={tmpDir}',
                 '-sstep', str(self.intervalSpin.value()),
-                '-endpos', str(self.videoLength),
                 self.inputPath]
         showInfo(str(sound._packagedCmd(command)))
         pipe = sp.Popen(command, stdout=sp.PIPE, bufsize=10**8)

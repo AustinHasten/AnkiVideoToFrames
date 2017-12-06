@@ -1,15 +1,12 @@
 # Saul Femm
 # Initial Commit - August 11th, 2017
 
-import os, sys, shutil
+import os, sys, shutil, re
 import subprocess as sp
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
 from anki import utils, sound
-
-sys.path.insert(0, os.path.dirname(__file__))
-from moviepy.editor import VideoFileClip
 
 class App(QApplication):
     def __init__(self, args):
@@ -67,8 +64,12 @@ class App(QApplication):
                     caption='Select Video File',
                     filter='Video Files (*.avi *.flv *.mkv *.mp4 *.mpg *.wmv)')[0]
 
-        # Use midentify to get video length, subtract to prevent stalling
-        self.videoLength = VideoFileClip(self.inputPath).duration - 3
+        # Use mplayer to get video length, subtract to prevent stalling
+
+        command = ['mplayer', '-vo', 'null', '-ao', 'null', '-frames', '0', '-identify', self.inputPath]
+        results = sp.check_output(command).decode('utf-8')
+
+        self.videoLength = int(re.search(r'ID_LENGTH=(\d*)', results).groups()[0]) - 3
 
         # Move spinbox ranges
         self.intervalSpin.setRange(1, self.videoLength)

@@ -3,18 +3,19 @@
 
 import os, sys, shutil
 import subprocess as sp
-from PIL import Image
+from aqt import mw
+from aqt.qt import *
+from aqt.utils import showInfo
+from anki import utils, sound
+
+sys.path.insert(0, os.path.dirname(__file__))
 from moviepy.editor import VideoFileClip
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSpinBox, \
-        QPushButton, QProgressBar, QGridLayout, QFileDialog
 
 class App(QApplication):
     def __init__(self, args):
         super().__init__(args)
 
-        self.buildGui()
 
-    def buildGui(self):
         # Create window and layout
         self.window = QWidget()
         self.layout = QGridLayout()
@@ -50,14 +51,10 @@ class App(QApplication):
         self.layout.addWidget(self.commenceBtn, 2, 1)
         self.layout.addWidget(self.progressBar, 3, 0, 1, 2)
 
-        # Open media folder and input file select dialogs
-        self.mediaFolder = \
-            QFileDialog.getExistingDirectory(caption="Select Anki Media Folder")
         self.fileSelectBtnPushed()
 
         # Display app
         self.window.show()
-        self.window.resize(350, 150)
 
     def setToggleWidgets(self, state):
         for widget in self.toggleWidgets:
@@ -97,19 +94,18 @@ class App(QApplication):
         baseName = os.path.basename(self.inputPath)
         fileName, fileExtension = os.path.splitext(baseName)
 
-        # Create directory to hold frames before they're renamed
-        if not os.path.exists('tmp'):
-            os.makedirs('tmp')
-        # Create directory to CSVs
-        if not os.path.exists('csv'):
-            os.makedirs('csv')
+        tmpDir = mw.col.media.dir() + '/avtf_tmp'
+        if os.path.exists(tmpDir):
+            shutil.rmtree(tmpDir)
+        os.makedirs(tmpDir)
 
         command = [ 
                 'mplayer',
-                '-vo', 'jpeg:outdir=tmp',
+                '-vo', f'jpeg:outdir={tmpDir}',
                 '-sstep', str(self.intervalSpin.value()),
                 '-endpos', str(self.videoLength),
                 self.inputPath]
+        showInfo(str(sound._packagedCmd(command)))
         pipe = sp.Popen(command, stdout=sp.PIPE, bufsize=10**8)
 
         # Disable widgets and start indeterminate progressbar
@@ -121,24 +117,24 @@ class App(QApplication):
             pipe.poll()
             self.processEvents()
 
-        # Loop over the files created
-        with open(f'./csv/{fileName}.csv', 'w') as csv:
-            for frame in os.listdir('./tmp'):
-                # Prefix file names with movie's title and move them to media folder
-                newPath = f'{self.mediaFolder}/{fileName}_{frame}'
-                shutil.move(f'./tmp/{frame}', newPath)
+        for frame in os.listdir(tmpDir):
+            # Prefix file names with movie's title and move them to media folder
+            newPath = f'{mw.col.media.dir()}/{fileName}_{frame}'
+            shutil.move(f'{tmpDir}/{frame}', newPath)
 
-                # Delete blank images, write non-blank ones
-                bands = Image.open(newPath).split()
-                if all(band.getextrema() == (0, 0) for band in bands):
-                    os.remove(newPath)
-                else:
-                    csv.write(f'<img src=\"{fileName}_{frame}\">;{fileName}\n')
+        shutil.rmtree(tmpDir)
 
         # Reenable widgets and stop indeterminate progressbar
         self.progressBar.setRange(0, 1)
         self.setToggleWidgets(True)
 
-if __name__ == '__main__':
-    app = App(sys.argv)
-    sys.exit(app.exec_())
+def start():
+    mplayer_test = utils.call(['mplayer', '-really-quiet'])
+    if mplayer_test == -1:
+        showInfo('MPlayer not found.')
+        return
+    mw.myApp = app = App(sys.argv)
+
+action = QAction("test", mw)
+action.triggered.connect(start)
+mw.form.menuTools.addAction(action)

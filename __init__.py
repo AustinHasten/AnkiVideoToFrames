@@ -14,7 +14,7 @@ class App(QApplication):
 
         self.mpv = 'mpv'
         if utils.isWin:
-            self.mpv = os.path.join(os.path.dirname(sys.executable), '\mpv.com')
+            self.mpv = os.path.join(os.path.dirname(sys.executable), 'mpv.com')
 
         self.buildGUI()
 

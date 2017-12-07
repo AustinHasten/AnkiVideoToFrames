@@ -6,16 +6,22 @@ import subprocess as sp
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
-from anki import utils, sound
-
-sys.path.insert(0, os.path.dirname(__file__))
-from mutagen.mp4 import MP4
+from anki import utils
 
 class App(QApplication):
     def __init__(self, args):
         super().__init__(args)
 
+        basicModel = mw.col.models.byName('Basic')
+        if not basicModel:
+            # TODO Create Basic note type
+            showInfo('No Basic note type')
+            return
+        mw.col.models.setCurrent(basicModel)
 
+        self.buildGUI()
+
+    def buildGUI(self):
         # Create window and layout
         self.window = QWidget()
         self.layout = QGridLayout()
@@ -37,7 +43,11 @@ class App(QApplication):
         self.commenceBtn.pressed.connect(self.commenceBtnPushed)
 
         # Add toggle widgets to list
-        self.toggleWidgets = [self.intervalSpin, self.totalFramesSpin, self.fileSelectBtn, self.commenceBtn]
+        self.toggleWidgets = [
+            self.intervalSpin,
+            self.totalFramesSpin,
+            self.fileSelectBtn,
+            self.commenceBtn]
 
         # Disable widgets
         self.setToggleWidgets(False)
@@ -67,13 +77,15 @@ class App(QApplication):
                     caption='Select Video File',
                     filter='Video Files (*.avi *.flv *.mkv *.mp4 *.mpg *.wmv)')[0]
 
-        # Use mplayer to get video length, subtract to prevent stalling
-
-#        command = ['mplayer', '-vo', 'null', '-ao', 'null', '-frames', '0', '-identify', self.inputPath]
-#        results = sp.check_output(command).decode('utf-8')
-
-        self.videoLength = MP4(self.inputPath).info.length
-#        self.videoLength = int(re.search(r'ID_LENGTH=(\d*)', results).groups()[0]) - 3
+        # Use mpv to get video length
+        command = [
+            'mpv',
+            '--term-playing-msg=\"LENGTH=${=duration}\"',
+            '--vo=null', '--ao=null',
+            '--frames=1', '--no-cache', '--no-config',
+            '--quiet', self.inputPath]
+        results = sp.check_output(command).decode('utf-8')
+        self.videoLength = int(re.search(r'LENGTH=(\d*)', results).groups()[0])
 
         # Move spinbox ranges
         self.intervalSpin.setRange(1, self.videoLength)
@@ -82,13 +94,13 @@ class App(QApplication):
         # Enable widgets
         self.setToggleWidgets(True)
 
-    # Link values of deley and total shots
+    # Link values of delay and total shots
     def intervalSpinChanged(self):
         # Calculate total shots by dividing video length by shot interval
         totalShots = (self.videoLength / self.intervalSpin.value())
         self.totalFramesSpin.setValue(totalShots)
 
-    # Link values of deley and total shots
+    # Link values of delay and total shots
     def totalFramesSpinChanged(self):
         # Calculate interval by dividing video length by total shots
         interval = (self.videoLength / self.totalFramesSpin.value())
@@ -99,18 +111,16 @@ class App(QApplication):
         baseName = os.path.basename(self.inputPath)
         fileName, fileExtension = os.path.splitext(baseName)
 
+        # Delete and recreate temporary directory
         tmpDir = mw.col.media.dir() + '/avtf_tmp'
         if os.path.exists(tmpDir):
             shutil.rmtree(tmpDir)
         os.makedirs(tmpDir)
 
-        command = [ 
-                'mpv',
-                '--vo=image',
-                f'--vo-image-outdir={tmpDir}',
-                '-sstep', str(self.intervalSpin.value()),
-                self.inputPath]
-        showInfo(str(sound._packagedCmd(command)))
+        command = ['mpv',
+            '--vo=image', f'--vo-image-outdir={tmpDir}',
+            '-sstep', str(self.intervalSpin.value()),
+            self.inputPath]
         pipe = sp.Popen(command, stdout=sp.PIPE, bufsize=10**8)
 
         # Disable widgets and start indeterminate progressbar
@@ -126,7 +136,12 @@ class App(QApplication):
             # Prefix file names with movie's title and move them to media folder
             newPath = f'{mw.col.media.dir()}/{fileName}_{frame}'
             shutil.move(f'{tmpDir}/{frame}', newPath)
+            note = mw.col.newNote()
+            note['Front'] = f'<img src=\"{fileName}_{frame}\">'
+            note['Back'] = fileName
+            mw.col.addNote(note)
 
+        # Delete temporary directory
         shutil.rmtree(tmpDir)
 
         # Reenable widgets and stop indeterminate progressbar

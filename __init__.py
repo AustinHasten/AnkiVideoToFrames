@@ -12,12 +12,9 @@ class App(QApplication):
     def __init__(self, args):
         super().__init__(args)
 
-        basicModel = mw.col.models.byName('Basic')
-        if not basicModel:
-            # TODO Create Basic note type
-            showInfo('No Basic note type')
-            return
-        mw.col.models.setCurrent(basicModel)
+        self.mpv = 'mpv'
+        if utils.isWin:
+            self.mpv = os.path.join(os.path.dirname(sys.executable), '\mpv.com')
 
         self.buildGUI()
 
@@ -34,7 +31,6 @@ class App(QApplication):
         self.totalFramesSpin = QSpinBox()
         self.fileSelectBtn = QPushButton("Select file...")
         self.commenceBtn = QPushButton("Commence")
-        self.progressBar = QProgressBar()
 
         # Connect signals to slots
         self.fileSelectBtn.pressed.connect(self.fileSelectBtnPushed)
@@ -44,12 +40,10 @@ class App(QApplication):
 
         # Add toggle widgets to list
         self.toggleWidgets = [
-            self.intervalSpin,
-            self.totalFramesSpin,
-            self.fileSelectBtn,
-            self.commenceBtn]
+            self.intervalSpin, self.totalFramesSpin,
+            self.fileSelectBtn, self.commenceBtn]
 
-        # Disable widgets
+        # Disable toggle widgets
         self.setToggleWidgets(False)
 
         # Add widgets to layout
@@ -59,8 +53,8 @@ class App(QApplication):
         self.layout.addWidget(self.totalFramesSpin, 1, 1)
         self.layout.addWidget(self.fileSelectBtn, 2, 0)
         self.layout.addWidget(self.commenceBtn, 2, 1)
-        self.layout.addWidget(self.progressBar, 3, 0, 1, 2)
 
+        # Simulate file select button push
         self.fileSelectBtnPushed()
 
         # Display app
@@ -79,7 +73,7 @@ class App(QApplication):
 
         # Use mpv to get video length
         command = [
-            'mpv',
+            self.mpv,
             '--term-playing-msg=\"LENGTH=${=duration}\"',
             '--vo=null', '--ao=null',
             '--frames=1', '--no-cache', '--no-config',
@@ -96,65 +90,58 @@ class App(QApplication):
 
     # Link values of delay and total shots
     def intervalSpinChanged(self):
-        # Calculate total shots by dividing video length by shot interval
         totalShots = (self.videoLength / self.intervalSpin.value())
         self.totalFramesSpin.setValue(totalShots)
 
     # Link values of delay and total shots
     def totalFramesSpinChanged(self):
-        # Calculate interval by dividing video length by total shots
         interval = (self.videoLength / self.totalFramesSpin.value())
         self.intervalSpin.setValue(interval)
 
     def commenceBtnPushed(self):
-        # Seperate file name and file extension
         baseName = os.path.basename(self.inputPath)
         fileName, fileExtension = os.path.splitext(baseName)
 
-        # Delete and recreate temporary directory
-        tmpDir = mw.col.media.dir() + '/avtf_tmp'
-        if os.path.exists(tmpDir):
-            shutil.rmtree(tmpDir)
-        os.makedirs(tmpDir)
-
-        command = ['mpv',
-            '--vo=image', f'--vo-image-outdir={tmpDir}',
-            '-sstep', str(self.intervalSpin.value()),
-            self.inputPath]
-        pipe = sp.Popen(command, stdout=sp.PIPE, bufsize=10**8)
-
-        # Disable widgets and start indeterminate progressbar
+        tmpDir = utils.tmpdir()
+        command = [
+            self.mpv, '--vo=image', f'--vo-image-outdir={tmpDir}',
+            '-sstep', str(self.intervalSpin.value()), self.inputPath]
         self.setToggleWidgets(False)
-        self.progressBar.setRange(0, 0)
-
-        # Continually check if pipe has completed and update GUI
-        while pipe.returncode == None:
-            pipe.poll()
-            self.processEvents()
+        self.processEvents()
+        utils.call(command)
 
         for frame in os.listdir(tmpDir):
-            # Prefix file names with movie's title and move them to media folder
-            newPath = f'{mw.col.media.dir()}/{fileName}_{frame}'
-            shutil.move(f'{tmpDir}/{frame}', newPath)
+            newPath = os.path.join(mw.col.media.dir(), f'{fileName}_{frame}')
+            shutil.move(os.path.join(tmpDir, frame), newPath)
             note = mw.col.newNote()
             note['Front'] = f'<img src=\"{fileName}_{frame}\">'
             note['Back'] = fileName
             mw.col.addNote(note)
 
-        # Delete temporary directory
-        shutil.rmtree(tmpDir)
-
-        # Reenable widgets and stop indeterminate progressbar
-        self.progressBar.setRange(0, 1)
         self.setToggleWidgets(True)
 
 def start():
-    mplayer_test = utils.call(['mplayer', '-really-quiet'])
+    # Check that mpv is available
+    mpv = 'mpv'
+    if utils.isWin:
+        mpv = os.path.dirname(sys.executable) + '\mpv.com'
+
+    mplayer_test = utils.call([mpv, '-V', '--really-quiet'])
     if mplayer_test == -1:
-        showInfo('MPlayer not found.')
+        showInfo('MPV not found.')
         return
+
+    # Check for 'Basic' note type
+    # TODO Create Basic note type if it doesn't exist
+    basicModel = mw.col.models.byName('Basic')
+    if not basicModel:
+        showInfo('No Basic note type')
+        return
+    mw.col.models.setCurrent(basicModel)
+
     mw.myApp = app = App(sys.argv)
 
-action = QAction("test", mw)
+action = QAction('VideoToFrames', mw)
 action.triggered.connect(start)
 mw.form.menuTools.addAction(action)
+

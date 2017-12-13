@@ -14,11 +14,11 @@ class App(QWidget):
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.inputVideo = ''
 
-        self.check_mpv()
-        self.set_model()
+        self.checkMPV()
+        self.setModel()
         self.buildGUI()
 
-    def check_mpv(self):
+    def checkMPV(self):
         # Look for 'mpv' in PATH on Linux systems
         self.mpv = 'mpv'
         # Look for 'mpv.com' in Anki install directory on Windows systems
@@ -33,7 +33,7 @@ class App(QWidget):
             showInfo('MPV not found.')
             self.close()
 
-    def set_model(self):
+    def setModel(self):
         """ Check for 'Basic' note type, recreate it if it doesn't exist. """
         basicModel = mw.col.models.byName('Basic')
         if not basicModel:

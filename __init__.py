@@ -51,10 +51,10 @@ class App(QWidget):
             mw.col.models.addField(basicModel, backField)
 
             mw.col.models.add(basicModel)
-        mw.col.models.setCurrent(basicModel)
+        mw.col.models.setCurrent(basicModel, False)
 
     def buildGUI(self):
-        # Create window and layout.
+        # Create layout.
         self.layout = QGridLayout()
         self.setLayout(self.layout)
 
@@ -151,11 +151,11 @@ class App(QWidget):
 
         for frame in os.listdir(tmpDir):
             # Move frame to media.collection/filename_frame.jpg
-            newVideo = os.path.join(mw.col.media.dir(), f'{fileName}_{frame}')
-            shutil.move(os.path.join(tmpDir, frame), newVideo)
+            framePath = os.path.join(mw.col.media.dir(), f'{fileName}_{frame}')
+            shutil.move(os.path.join(tmpDir, frame), framePath)
 
             # Add note of basic type with image on front and filename on back
-            note = mw.col.newNote()
+            note = mw.col.newNote(False)
             note['Front'] = f'<img src=\"{fileName}_{frame}\">'
             note['Back'] = fileName
             note.tags.append('videotoframes')
